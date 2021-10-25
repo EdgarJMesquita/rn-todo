@@ -1,4 +1,9 @@
 {
   "name": "todo",
-  "displayName": "todo"
+  "displayName": "todo",
+  "splash": {
+    "image": "./assets/splash.png",
+    "resizeMode": "contain",
+    "backgroundColor": "#8257E5"
+  }
 }
