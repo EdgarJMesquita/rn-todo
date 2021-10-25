@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-
 import { Header } from '../components/Header';
 import { Task, TasksList } from '../components/TasksList';
 import { TodoInput } from '../components/TodoInput';
@@ -8,23 +8,37 @@ import { TodoInput } from '../components/TodoInput';
 export function Home() {
   const [tasks, setTasks] = useState<Task[]>([]);
 
-  function handleAddTask(newTaskTitle: string) {
+  async function handleAddTask(newTaskTitle: string) {
     const newTask = {
       id: Date.now(),
       title: newTaskTitle,
       done: false
     }
+    const updatedTasks = [...tasks, newTask];
+    await AsyncStorage.setItem('@tasks', JSON.stringify(updatedTasks));
+    setTasks(updatedTasks);
 
-    setTasks(prev=>[...prev, newTask])
   }
 
-  function handleToggleTaskDone(id: number) {
-    setTasks(prev=>prev.map(task=>task.id===id?{ ...task, done: !task.done }:{...task}));
+  async function handleToggleTaskDone(id: number) {
+    const updatedTasks = tasks.map(task=>task.id===id?{ ...task, done: !task.done }:{...task});
+    await AsyncStorage.setItem('@tasks', JSON.stringify(updatedTasks));
+    setTasks(updatedTasks);
   }
 
-  function handleRemoveTask(id: number) {
-    setTasks(prev=>prev.filter(task=>task.id!==id));
+  async function handleRemoveTask(id: number) {
+    const updatedTasks = tasks.filter(task=>task.id!==id);
+    await AsyncStorage.setItem('@tasks', JSON.stringify(updatedTasks));
+    setTasks(updatedTasks);
   }
+
+  useEffect(() => {
+    (async()=>{
+      const storage = await AsyncStorage.getItem('@tasks');
+      setTasks(storage? JSON.parse(storage):[]);
+    })();
+
+  }, [])
 
   return (
     <View style={styles.container}>
