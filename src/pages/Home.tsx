@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Alert, StyleSheet, View, AlertButton } from 'react-native';
 import { Header } from '../components/Header';
 import { Task, TasksList } from '../components/TasksList';
 import { TodoInput } from '../components/TodoInput';
@@ -9,6 +9,11 @@ export function Home() {
   const [tasks, setTasks] = useState<Task[]>([]);
 
   async function handleAddTask(newTaskTitle: string) {
+    if(tasks.findIndex(item=>item.title===newTaskTitle) > 0){
+      Alert.alert('Task já cadastrada','Você não pode cadastrar uma task com o mesmo nome.')
+      return;
+    }
+
     const newTask = {
       id: Date.now(),
       title: newTaskTitle,
@@ -26,10 +31,32 @@ export function Home() {
     setTasks(updatedTasks);
   }
 
-  async function handleRemoveTask(id: number) {
-    const updatedTasks = tasks.filter(task=>task.id!==id);
+  async function handleEdit(id: number ,title: string) {
+    const updatedTasks = tasks.map(task=>task.id===id? { ...task, title: title }:{...task});
     await AsyncStorage.setItem('@tasks', JSON.stringify(updatedTasks));
     setTasks(updatedTasks);
+  }
+
+
+  async function handleRemoveTask(id: number) {
+    Alert.alert(
+      'Remover item', 
+      'Tem certeza que deseja remover o item?', 
+      [
+        {
+          text: 'Não',
+          style: 'cancel' 
+        },
+        {
+          text: 'Sim',
+          onPress: async()=>{
+            const updatedTasks = tasks.filter(task=>task.id!==id);
+            await AsyncStorage.setItem('@tasks', JSON.stringify(updatedTasks));
+            setTasks(updatedTasks);
+          }
+        }
+      ]
+    )
   }
 
   useEffect(() => {
@@ -49,7 +76,8 @@ export function Home() {
       <TasksList 
         tasks={tasks} 
         toggleTaskDone={handleToggleTaskDone}
-        removeTask={handleRemoveTask} 
+        removeTask={handleRemoveTask}
+        handleEdit={handleEdit}
       />
     </View>
   )

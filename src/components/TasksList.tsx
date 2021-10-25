@@ -17,9 +17,10 @@ interface TasksListProps {
   tasks: Task[];
   toggleTaskDone: (id: number) => void;
   removeTask: (id: number) => void;
+  handleEdit: (id: number, title:string)=>void;
 }
 
-export function TasksList({ tasks, toggleTaskDone, removeTask }: TasksListProps) {
+export function TasksList({ tasks, toggleTaskDone, removeTask, handleEdit }: TasksListProps) {
 
   return (
     <FlatList
@@ -27,16 +28,15 @@ export function TasksList({ tasks, toggleTaskDone, removeTask }: TasksListProps)
       keyExtractor={item => String(item.id)}
       contentContainerStyle={{ paddingBottom: 24 }}
       showsVerticalScrollIndicator={false}
+      style={{marginTop: 32}}
       renderItem={({ item, index }) => 
         <TaskItem 
           task={item} 
           index={index} 
           removeTask={removeTask} 
-          toggleTaskDone={toggleTaskDone} 
+          toggleTaskDone={toggleTaskDone}
+          handleEdit={handleEdit}
         />}
-      style={{
-        marginTop: 32
-      }}
     />
   )
 }

@@ -1,8 +1,10 @@
-import React from 'react';
-import { StyleSheet, TouchableOpacity, View, Text, Image, TextInput } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { StyleSheet, TouchableOpacity, View, Image, TextInput } from 'react-native';
 import { ItemWrapper } from './ItemWrapper';
 import Icon from 'react-native-vector-icons/Feather';
 import trashIcon from '../assets/icons/trash/trash.png'
+import Pen from '.././assets/icons/Pen.png';
+import X from '.././assets/icons/X.png';
 
 type Task = {
   id: number;
@@ -15,11 +17,33 @@ type Props = {
   index: number;
   toggleTaskDone: (id: number) => void;
   removeTask: (id: number) => void;
+  handleEdit: (id: number, title:string) => void;
 }
 
-export function TaskItem({task,index,toggleTaskDone,removeTask}:Props) {
+export function TaskItem({task,index,toggleTaskDone,removeTask, handleEdit}:Props) {
+  const [isEditting, setIsEditting] = useState(false);
+  const [edittingTask, setEdittingTask] = useState(task.title)
+  const input = useRef<TextInput>(null);
 
+  function handleEditing(){
+    if(!isEditting){
+      setIsEditting(true);
 
+    } else {
+      setIsEditting(false);
+
+    }
+  }
+
+  function confirmEditting(){
+    handleEdit(task.id, edittingTask);
+  }
+
+  useEffect(() => {
+    if(isEditting){
+      input.current?.focus();
+    }
+  }, [isEditting])
 
   return (
     <ItemWrapper index={index}>
@@ -43,22 +67,43 @@ export function TaskItem({task,index,toggleTaskDone,removeTask}:Props) {
             )}
           </View>
 
-          {/* <Text 
-            style={task.done? styles.taskTextDone :styles.taskText}
-          >
-            {task.title}
-          </Text> */}
           <TextInput 
-            value={task.title}
+            ref={input}
+            value={edittingTask}
+            onChangeText={setEdittingTask}
             style={[task.done? styles.taskTextDone :styles.taskText, {padding: 0}]}
+            editable={isEditting}
+            onSubmitEditing={confirmEditting}
+            onBlur={handleEditing}
           />
         </TouchableOpacity>
       </View>
 
+      
+      <TouchableOpacity
+        onPress={handleEditing}
+      >
+        {
+          isEditting?
+          <Image 
+            source={X}
+            style={{width: 20, height: 20}}
+          />
+          :
+          <Image 
+            source={Pen}
+            style={{width: 27, height: 27}}
+          />
+        }
+      </TouchableOpacity>
+
+      <View style={{width: 1, height: '60%', backgroundColor: '#C4C4C4', marginHorizontal: 20}} />
+        
       <TouchableOpacity
         testID={`trash-${index}`}
-        style={{ paddingHorizontal: 24 }}
+        style={{marginRight: 29, opacity: isEditting? 0.2: 1}}
         onPress={()=>removeTask(task.id)}
+        disabled={isEditting}
       >
         <Image source={trashIcon} />
       </TouchableOpacity>
